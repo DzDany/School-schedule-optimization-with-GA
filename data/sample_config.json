@@ -1,0 +1,69 @@
+{
+  "materias": [
+    { "id": "MAT01", "nombre": "Matemáticas", "horas_semana": 5 },
+    { "id": "ESP01", "nombre": "Español",      "horas_semana": 5 },
+    { "id": "FIS01", "nombre": "Física",       "horas_semana": 3 },
+    { "id": "QUI01", "nombre": "Química",      "horas_semana": 3 },
+    { "id": "HIS01", "nombre": "Historia",     "horas_semana": 2 }
+  ],
+
+  "profesores": [
+    {
+      "id": "PROF01",
+      "nombre": "Carlos Martínez",
+      "materias_ids": ["MAT01", "FIS01"],
+      "disponibilidad": [
+        ["Lunes",7], ["Lunes",8], ["Lunes",9], ["Lunes",10],
+        ["Martes",7], ["Martes",8], ["Martes",9],
+        ["Miércoles",7], ["Miércoles",8], ["Miércoles",9],
+        ["Jueves",7], ["Jueves",8], ["Jueves",9],
+        ["Viernes",7], ["Viernes",8]
+      ]
+    },
+    {
+      "id": "PROF02",
+      "nombre": "Ana López",
+      "materias_ids": ["ESP01", "HIS01"],
+      "disponibilidad": [
+        ["Lunes",8], ["Lunes",9], ["Lunes",10], ["Lunes",11],
+        ["Martes",8], ["Martes",9], ["Martes",10],
+        ["Miércoles",8], ["Miércoles",9], ["Miércoles",10],
+        ["Jueves",8], ["Jueves",9], ["Jueves",10],
+        ["Viernes",8], ["Viernes",9]
+      ]
+    },
+    {
+      "id": "PROF03",
+      "nombre": "Roberto Sánchez",
+      "materias_ids": ["QUI01", "FIS01"],
+      "disponibilidad": [
+        ["Lunes",10], ["Lunes",11], ["Lunes",12],
+        ["Martes",10], ["Martes",11], ["Martes",12],
+        ["Miércoles",10], ["Miércoles",11],
+        ["Jueves",10], ["Jueves",11], ["Jueves",12],
+        ["Viernes",10], ["Viernes",11]
+      ]
+    }
+  ],
+
+  "aulas": [
+    { "id": "AULA01", "nombre": "Salón 101",    "capacidad": 35 },
+    { "id": "AULA02", "nombre": "Salón 102",    "capacidad": 30 },
+    { "id": "AULA03", "nombre": "Lab Química",  "capacidad": 25 }
+  ],
+
+  "grupos": [
+    {
+      "id": "GRP01",
+      "nombre": "1°A",
+      "num_alumnos": 30,
+      "materias_ids": ["MAT01", "ESP01", "FIS01", "QUI01", "HIS01"]
+    },
+    {
+      "id": "GRP02",
+      "nombre": "1°B",
+      "num_alumnos": 24,
+      "materias_ids": ["MAT01", "ESP01", "FIS01", "QUI01", "HIS01"]
+    }
+  ]
+}

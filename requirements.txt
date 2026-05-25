@@ -1,0 +1,6 @@
+# School Scheduler — Parte A
+# No requiere librerías externas: solo usa la librería estándar de Python 3.8+
+# (random, dataclasses, collections, json, typing)
+
+# Opcional para testing:
+# pytest>=7.0
