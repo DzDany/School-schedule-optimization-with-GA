@@ -37,11 +37,13 @@ class GeneticOperators:
         self,
         profesores_por_materia: Dict[str, List[Profesor]],
         aulas: List[Aula],
-        tasa_mutacion: float = 0.03,
+        profesores: Dict[str, Profesor] = None,
+        tasa_mutacion: float = 0.02,
         tam_torneo: int = 3
     ):
         self.profesores_por_materia = profesores_por_materia
         self.aulas = aulas
+        self.profesores = profesores
         self.tasa_mutacion = tasa_mutacion
         self.tam_torneo = tam_torneo
 
@@ -64,32 +66,58 @@ class GeneticOperators:
 
     # ── 2. Cruce de un punto ──────────────────────────────────────────────────
 
-    def cruce_un_punto(
-        self, padre1: Chromosome, padre2: Chromosome
-    ) -> Tuple[Chromosome, Chromosome]:
+    def cruce_por_grupos(
+        self, padre1: Chromosome, padre2: Chromosome) -> Tuple[Chromosome, Chromosome]:
         """
-        Cruce de un punto: divide ambos padres en el mismo punto aleatorio
-        e intercambia sus segmentos para producir dos hijos.
-
-        Si los cromosomas tienen distinto largo (no debería ocurrir con datos
-        consistentes), devuelve copias de los padres sin cruzar.
-
-        Parámetros:
-            padre1, padre2: Cromosomas seleccionados como padres
-
-        Retorna:
-            Tupla (hijo1, hijo2) — nuevos cromosomas, fitness_score = 0.0
+        Cruce por Grupos: En lugar de cortar la lista de genes a la mitad,
+        intercambia los horarios completos de los grupos entre los padres.
+        Garantiza que no se dupliquen ni falten materias para ningún grupo.
         """
-        n = len(padre1)
-        if n != len(padre2) or n < 2:
+        # 1. Identificar todos los grupos únicos que existen en el horario
+        grupos_ids = list(set(s.grupo_id for s in padre1.genes))
+
+        # Si solo hay un grupo, el cruce de grupos no tiene sentido. 
+        # Devolvemos copias exactas de los padres.
+        if len(grupos_ids) < 2:
             return padre1.copy(), padre2.copy()
 
-        punto = random.randint(1, n - 1)
+        # 2. Elegir un punto de corte aleatorio basado en la lista de grupos
+        punto = random.randint(1, len(grupos_ids) - 1)
+        grupos_mitad_1 = set(grupos_ids[:punto])
+        grupos_mitad_2 = set(grupos_ids[punto:])
 
-        hijo1 = Chromosome(padre1.genes[:punto] + padre2.genes[punto:])
-        hijo2 = Chromosome(padre2.genes[:punto] + padre1.genes[punto:])
+        # 3. Construir los genes del Hijo 1
+        hijo1_genes = []
+        # Hereda la mitad 1 del Padre 1
+        for s in padre1.genes:
+            if s.grupo_id in grupos_mitad_1:
+                hijo1_genes.append(Sesion(
+                    s.grupo_id, s.materia_id, s.profesor_id, s.aula_id, s.dia, s.hora
+                ))
+        # Hereda la mitad 2 del Padre 2
+        for s in padre2.genes:
+            if s.grupo_id in grupos_mitad_2:
+                hijo1_genes.append(Sesion(
+                    s.grupo_id, s.materia_id, s.profesor_id, s.aula_id, s.dia, s.hora
+                ))
 
-        return hijo1, hijo2
+        # 4. Construir los genes del Hijo 2 (el inverso del Hijo 1)
+        hijo2_genes = []
+        # Hereda la mitad 1 del Padre 2
+        for s in padre2.genes:
+            if s.grupo_id in grupos_mitad_1:
+                hijo2_genes.append(Sesion(
+                    s.grupo_id, s.materia_id, s.profesor_id, s.aula_id, s.dia, s.hora
+                ))
+        # Hereda la mitad 2 del Padre 1
+        for s in padre1.genes:
+            if s.grupo_id in grupos_mitad_2:
+                hijo2_genes.append(Sesion(
+                    s.grupo_id, s.materia_id, s.profesor_id, s.aula_id, s.dia, s.hora
+                ))
+
+        # 5. Retornar los nuevos individuos listos para evaluarse
+        return Chromosome(hijo1_genes), Chromosome(hijo2_genes)
 
     # ── 3. Mutación aleatoria ─────────────────────────────────────────────────
 
@@ -114,19 +142,46 @@ class GeneticOperators:
             if random.random() >= self.tasa_mutacion:
                 continue  # Este gen no muta
 
-            aspecto = random.choice(["profesor", "aula", "dia", "hora"])
+            # Agrupamos dia y hora en "tiempo"
+            aspecto = random.choice(["profesor", "aula", "tiempo"])
 
             if aspecto == "profesor":
                 candidatos = self.profesores_por_materia.get(sesion.materia_id, [])
                 if candidatos:
+                    nuevo_prof = random.choice(candidatos)
+                    # CRÍTICO: Si cambiamos de profesor, DEBEMOS asignarle una hora en la que él pueda.
+                    if nuevo_prof.disponibilidad:
+                        nuevo_slot = random.choice(nuevo_prof.disponibilidad)
+                        nuevo_dia, nueva_hora = nuevo_slot[0], nuevo_slot[1]
+                    else:
+                        nuevo_dia, nueva_hora = sesion.dia, sesion.hora
+                        
                     nuevo.genes[i] = Sesion(
                         grupo_id=sesion.grupo_id,
                         materia_id=sesion.materia_id,
-                        profesor_id=random.choice(candidatos).id,
+                        profesor_id=nuevo_prof.id,
                         aula_id=sesion.aula_id,
-                        dia=sesion.dia,
-                        hora=sesion.hora
+                        dia=nuevo_dia,
+                        hora=nueva_hora
                     )
+
+            elif aspecto == "tiempo":
+                # Cambiamos la hora, pero sacándola de la disponibilidad del profesor actual
+                prof_actual = self.profesores.get(sesion.profesor_id)
+                if prof_actual and prof_actual.disponibilidad:
+                    nuevo_slot = random.choice(prof_actual.disponibilidad)
+                    nuevo_dia, nueva_hora = nuevo_slot[0], nuevo_slot[1]
+                else:
+                    nuevo_dia, nueva_hora = random.choice(DIAS), random.choice(HORAS)
+                    
+                nuevo.genes[i] = Sesion(
+                    grupo_id=sesion.grupo_id,
+                    materia_id=sesion.materia_id,
+                    profesor_id=sesion.profesor_id,
+                    aula_id=sesion.aula_id,
+                    dia=nuevo_dia,
+                    hora=nueva_hora
+                )
 
             elif aspecto == "aula":
                 nuevo.genes[i] = Sesion(
@@ -136,26 +191,6 @@ class GeneticOperators:
                     aula_id=random.choice(self.aulas).id,
                     dia=sesion.dia,
                     hora=sesion.hora
-                )
-
-            elif aspecto == "dia":
-                nuevo.genes[i] = Sesion(
-                    grupo_id=sesion.grupo_id,
-                    materia_id=sesion.materia_id,
-                    profesor_id=sesion.profesor_id,
-                    aula_id=sesion.aula_id,
-                    dia=random.choice(DIAS),
-                    hora=sesion.hora
-                )
-
-            elif aspecto == "hora":
-                nuevo.genes[i] = Sesion(
-                    grupo_id=sesion.grupo_id,
-                    materia_id=sesion.materia_id,
-                    profesor_id=sesion.profesor_id,
-                    aula_id=sesion.aula_id,
-                    dia=sesion.dia,
-                    hora=random.choice(HORAS)
                 )
 
         nuevo.fitness_score = 0.0  # Requiere re-evaluación

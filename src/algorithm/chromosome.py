@@ -76,13 +76,26 @@ class Chromosome:
                     continue  # Dato incompleto: se omite esta sesión
 
                 for _ in range(materia.horas_semana):
+                    # 1. Elegir un profesor aleatorio válido para la materia
+                    prof_elegido = random.choice(candidatos)
+                    
+                    # 2. Elegir un día y hora SOLO de su lista de disponibilidad
+                    if prof_elegido.disponibilidad:
+                        slot_elegido = random.choice(prof_elegido.disponibilidad)
+                        dia_elegido = slot_elegido[0]
+                        hora_elegida = slot_elegido[1]
+                    else:
+                        # Fallback por si el profe no tiene disponibilidad declarada
+                        dia_elegido = random.choice(DIAS)
+                        hora_elegida = random.choice(HORAS)
+
                     genes.append(Sesion(
                         grupo_id=grupo.id,
                         materia_id=materia_id,
-                        profesor_id=random.choice(candidatos).id,
+                        profesor_id=prof_elegido.id,
                         aula_id=random.choice(aulas).id,
-                        dia=random.choice(DIAS),
-                        hora=random.choice(HORAS)
+                        dia=dia_elegido,
+                        hora=hora_elegida
                     ))
 
         return Chromosome(genes)
