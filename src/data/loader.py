@@ -11,12 +11,12 @@ from typing import Dict, List, Tuple
 from src.models.entities import Materia, Profesor, Aula, Grupo
 
 
-class DataLoader:
+class CargadorDatos:
     """
     Encargado de leer los datos de entrada del problema.
 
     Uso:
-        loader = DataLoader()
+        loader = CargadorDatos()
         materias, profesores, aulas, grupos = loader.cargar_desde_json("data/config.json")
     """
 

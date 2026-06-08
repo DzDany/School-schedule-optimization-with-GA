@@ -13,12 +13,12 @@ Todos los operadores devuelven NUEVOS objetos sin modificar los originales.
 import random
 from typing import List, Dict, Tuple
 
-from src.algorithm.chromosome import Chromosome, DIAS, HORAS
+from src.algorithm.chromosome import Cromosoma, DIAS, HORAS
 from src.models.entities import Profesor, Aula
 from src.models.horario import Sesion
 
 
-class GeneticOperators:
+class OperadoresGeneticos:
     """
     Contiene los operadores genéticos parametrizables.
 
@@ -49,25 +49,25 @@ class GeneticOperators:
 
     # ── 1. Selección por torneo ───────────────────────────────────────────────
 
-    def seleccion_torneo(self, poblacion: List[Chromosome]) -> Chromosome:
+    def seleccion_torneo(self, poblacion: List[Cromosoma]) -> Cromosoma:
         """
         Selecciona al mejor individuo de un subconjunto aleatorio de la
         población (torneo). Favorece a los mejores sin eliminar a los peores.
 
         Parámetros:
-            poblacion: Lista de cromosomas ya evaluados (con fitness_score)
+            poblacion: Lista de cromosomas ya evaluados (con puntaje_aptitud)
 
         Retorna:
-            El cromosoma con mayor fitness_score del torneo (sin copiarlo)
+            El cromosoma con mayor puntaje_aptitud del torneo (sin copiarlo)
         """
         k = min(self.tam_torneo, len(poblacion))
         candidatos = random.sample(poblacion, k)
-        return max(candidatos, key=lambda c: c.fitness_score)
+        return max(candidatos, key=lambda c: c.puntaje_aptitud)
 
     # ── 2. Cruce de un punto ──────────────────────────────────────────────────
 
     def cruce_por_grupos(
-        self, padre1: Chromosome, padre2: Chromosome) -> Tuple[Chromosome, Chromosome]:
+        self, padre1: Cromosoma, padre2: Cromosoma) -> Tuple[Cromosoma, Cromosoma]:
         """
         Cruce por Grupos: En lugar de cortar la lista de genes a la mitad,
         intercambia los horarios completos de los grupos entre los padres.
@@ -117,11 +117,11 @@ class GeneticOperators:
                 ))
 
         # 5. Retornar los nuevos individuos listos para evaluarse
-        return Chromosome(hijo1_genes), Chromosome(hijo2_genes)
+        return Cromosoma(hijo1_genes), Cromosoma(hijo2_genes)
 
     # ── 3. Mutación aleatoria ─────────────────────────────────────────────────
 
-    def mutar(self, cromosoma: Chromosome) -> Chromosome:
+    def mutar(self, cromosoma: Cromosoma) -> Cromosoma:
         """
         Recorre cada gen del cromosoma y, con probabilidad tasa_mutacion,
         cambia aleatoriamente UNO de sus atributos:
@@ -193,5 +193,5 @@ class GeneticOperators:
                     hora=sesion.hora
                 )
 
-        nuevo.fitness_score = 0.0  # Requiere re-evaluación
+        nuevo.puntaje_aptitud = 0.0  # Requiere re-evaluación
         return nuevo

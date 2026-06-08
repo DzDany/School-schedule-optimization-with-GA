@@ -25,7 +25,7 @@ HORAS: List[int] = list(range(7, 17))  # 7:00 am – 4:00 pm (10 franjas)
 
 # ─── Clase Cromosoma ──────────────────────────────────────────────────────────
 
-class Chromosome:
+class Cromosoma:
     """
     Representa a un individuo de la población: un horario escolar completo.
 
@@ -37,7 +37,7 @@ class Chromosome:
 
     def __init__(self, genes: List[Sesion]):
         self.genes: List[Sesion] = genes
-        self.fitness_score: float = 0.0
+        self.puntaje_aptitud: float = 0.0
 
     # ── Generación aleatoria ──────────────────────────────────────────────────
 
@@ -47,7 +47,7 @@ class Chromosome:
         materias: Dict[str, Materia],
         profesores_por_materia: Dict[str, List[Profesor]],
         aulas: List[Aula]
-    ) -> "Chromosome":
+    ) -> "Cromosoma":
         """
         Crea un cromosoma con asignaciones completamente aleatorias.
 
@@ -62,7 +62,7 @@ class Chromosome:
             aulas                 : Lista de aulas disponibles
 
         Retorna:
-            Un Chromosome con genes generados al azar (aún sin evaluar)
+            Un Cromosoma con genes generados al azar (aún sin evaluar)
         """
         genes: List[Sesion] = []
 
@@ -98,7 +98,7 @@ class Chromosome:
                         hora=hora_elegida
                     ))
 
-        return Chromosome(genes)
+        return Cromosoma(genes)
 
     # ── Utilidades ────────────────────────────────────────────────────────────
 
@@ -106,9 +106,9 @@ class Chromosome:
         """Convierte el cromosoma en un objeto Horario listo para exportar."""
         return Horario(sesiones=list(self.genes))
 
-    def copy(self) -> "Chromosome":
+    def copy(self) -> "Cromosoma":
         """Devuelve una copia profunda del cromosoma."""
-        copia = Chromosome([
+        copia = Cromosoma([
             Sesion(
                 grupo_id=s.grupo_id,
                 materia_id=s.materia_id,
@@ -119,11 +119,11 @@ class Chromosome:
             )
             for s in self.genes
         ])
-        copia.fitness_score = self.fitness_score
+        copia.puntaje_aptitud = self.puntaje_aptitud
         return copia
 
     def __len__(self) -> int:
         return len(self.genes)
 
     def __repr__(self) -> str:
-        return f"Chromosome(genes={len(self.genes)}, fitness={self.fitness_score:.4f})"
+        return f"Cromosoma(genes={len(self.genes)}, aptitud={self.puntaje_aptitud:.4f})"

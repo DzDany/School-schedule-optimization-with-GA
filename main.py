@@ -17,10 +17,10 @@ import json
 # Asegurar que el directorio raíz esté en el path
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from src.data.loader import DataLoader
-from src.algorithm.chromosome import Chromosome
-from src.algorithm.fitness import FitnessEvaluator
-from src.algorithm.operators import GeneticOperators
+from src.data.loader import CargadorDatos
+from src.algorithm.chromosome import Cromosoma
+from src.algorithm.fitness import EvaluadorAptitud
+from src.algorithm.operators import OperadoresGeneticos
 
 
 def separador(titulo: str):
@@ -41,7 +41,7 @@ def main():
 
     # ── 1. Cargar y validar datos ─────────────────────────────────────────
     separador("1. Carga de datos")
-    loader = DataLoader()
+    loader = CargadorDatos()
     materias, profesores, aulas, grupos = loader.cargar_desde_json("data/sample_config.json")
     
     print(f"Grupos: {len(grupos)} | Materias: {len(materias)} | Profesores: {len(profesores)} | Aulas: {len(aulas)}")
@@ -58,8 +58,8 @@ def main():
     profesores_por_materia = loader.construir_profesores_por_materia(profesores)
     lista_aulas = list(aulas.values())
 
-    evaluador = FitnessEvaluator(profesores, aulas, grupos)
-    operadores = GeneticOperators(
+    evaluador = EvaluadorAptitud(profesores, aulas, grupos)
+    operadores = OperadoresGeneticos(
         profesores_por_materia=profesores_por_materia,
         aulas=lista_aulas,
         profesores=profesores,
@@ -70,7 +70,7 @@ def main():
 
     # Generar población
     poblacion = [
-        Chromosome.generar_aleatorio(grupos, materias, profesores_por_materia, lista_aulas)
+        Cromosoma.generar_aleatorio(grupos, materias, profesores_por_materia, lista_aulas)
         for _ in range(POP_SIZE)
     ]
 
@@ -78,10 +78,10 @@ def main():
     for cromosoma in poblacion:
         evaluador.evaluar(cromosoma)
 
-    mejor_historico = max(poblacion, key=lambda c: c.fitness_score)
+    mejor_historico = max(poblacion, key=lambda c: c.puntaje_aptitud)
     generaciones_sin_mejora = 0
 
-    print(f"Población inicial lista. Mejor fitness base: {mejor_historico.fitness_score:.4f}")
+    print(f"Población inicial lista. Mejor aptitud base: {mejor_historico.puntaje_aptitud:.4f}")
 
     # ── 3. Bucle Evolutivo ────────────────────────────────────────────────
     separador("3. Iniciando Evolución")
@@ -91,7 +91,7 @@ def main():
 
         # Elitismo: Guardar al mejor individuo actual
         if ELITISMO:
-            mejor_actual = max(poblacion, key=lambda c: c.fitness_score)
+            mejor_actual = max(poblacion, key=lambda c: c.puntaje_aptitud)
             nueva_poblacion.append(mejor_actual.copy())
 
         # Crear el resto de la nueva generación
@@ -120,9 +120,9 @@ def main():
         poblacion = nueva_poblacion
 
         # Evaluar progreso
-        mejor_generacion = max(poblacion, key=lambda c: c.fitness_score)
+        mejor_generacion = max(poblacion, key=lambda c: c.puntaje_aptitud)
         
-        if mejor_generacion.fitness_score > mejor_historico.fitness_score:
+        if mejor_generacion.puntaje_aptitud > mejor_historico.puntaje_aptitud:
             mejor_historico = mejor_generacion.copy()
             generaciones_sin_mejora = 0
         else:
@@ -130,11 +130,11 @@ def main():
 
         # Imprimir progreso cada 10 generaciones
         if generacion % 10 == 0 or generacion == 1:
-            print(f"Generación {generacion:3d} | Mejor Fitness: {mejor_historico.fitness_score:.4f} | Sin mejora: {generaciones_sin_mejora}")
+            print(f"Generación {generacion:3d} | Mejor Aptitud: {mejor_historico.puntaje_aptitud:.4f} | Sin mejora: {generaciones_sin_mejora}")
 
         # ── Criterios de Parada ──
-        if mejor_historico.fitness_score >= UMBRAL_FITNESS:
-            print(f"\n✓ Criterio de parada alcanzado: Umbral de fitness superado ({UMBRAL_FITNESS}).")
+        if mejor_historico.puntaje_aptitud >= UMBRAL_FITNESS:
+            print(f"\n✓ Criterio de parada alcanzado: Umbral de aptitud superado ({UMBRAL_FITNESS}).")
             break
         
         if generaciones_sin_mejora >= GEN_SIN_MEJORA_MAX:
@@ -143,7 +143,7 @@ def main():
 
     # ── 4. Resultados ─────────────────────────────────────────────────────
     separador("4. Resultados Finales")
-    print(f"Mejor fitness final: {mejor_historico.fitness_score:.4f}")
+    print(f"Mejor aptitud final: {mejor_historico.puntaje_aptitud:.4f}")
     
     reporte = evaluador.reporte_violaciones(mejor_historico)
     print("\nDesglose de violaciones restantes:")

@@ -20,7 +20,7 @@ Fórmula de fitness:
 from collections import defaultdict
 from typing import Dict, List
 
-from src.algorithm.chromosome import Chromosome
+from src.algorithm.chromosome import Cromosoma
 from src.models.entities import Profesor, Aula, Grupo
 
 
@@ -32,14 +32,14 @@ PENALIZACION_DISPONIBILIDAD     = 10
 PENALIZACION_CAPACIDAD          = 5
 
 
-class FitnessEvaluator:
+class EvaluadorAptitud:
     """
     Evalúa cromosomas del horario escolar.
 
     Uso:
-        evaluador = FitnessEvaluator(profesores, aulas, grupos)
+        evaluador = EvaluadorAptitud(profesores, aulas, grupos)
         score = evaluador.evaluar(cromosoma)
-        # cromosoma.fitness_score también queda actualizado
+        # cromosoma.puntaje_aptitud también queda actualizado
     """
 
     def __init__(
@@ -54,21 +54,21 @@ class FitnessEvaluator:
 
     # ── Método principal ──────────────────────────────────────────────────────
 
-    def evaluar(self, cromosoma: Chromosome) -> float:
+    def evaluar(self, cromosoma: Cromosoma) -> float:
         """
-        Calcula y asigna el fitness_score del cromosoma.
+        Calcula y asigna el puntaje_aptitud del cromosoma.
 
         Retorna:
             float en (0.0, 1.0] — mayor es mejor
         """
         penalizacion = self._calcular_penalizacion(cromosoma)
         score = 1.0 / (1.0 + penalizacion)
-        cromosoma.fitness_score = score
+        cromosoma.puntaje_aptitud = score
         return score
 
     # ── Desglose para debugging ───────────────────────────────────────────────
 
-    def reporte_violaciones(self, cromosoma: Chromosome) -> Dict[str, int]:
+    def reporte_violaciones(self, cromosoma: Cromosoma) -> Dict[str, int]:
         """
         Retorna un desglose de cuántas violaciones hay por tipo.
         Útil para diagnosticar qué restricciones se están rompiendo más.
@@ -127,7 +127,7 @@ class FitnessEvaluator:
 
     # ── Lógica interna ────────────────────────────────────────────────────────
 
-    def _calcular_penalizacion(self, cromosoma: Chromosome) -> float:
+    def _calcular_penalizacion(self, cromosoma: Cromosoma) -> float:
         """Suma las penalizaciones de todas las restricciones."""
         penalizacion = 0.0
 

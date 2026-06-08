@@ -6,7 +6,7 @@ import threading
 
 PORT = 8000
 
-# Go to the parent directory to serve both data and viewer
+# ir al directorio padre para servir ambos datos y visores
 os.chdir(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 Handler = http.server.SimpleHTTPRequestHandler
@@ -18,7 +18,7 @@ def start_server():
             httpd = socketserver.TCPServer(("", PORT), Handler)
             return httpd
         except OSError as e:
-            if e.winerror == 10048 or e.errno == 98: # Address already in use
+            if e.winerror == 10048 or e.errno == 98: # direccion ya en uso
                 PORT += 1
             else:
                 raise
