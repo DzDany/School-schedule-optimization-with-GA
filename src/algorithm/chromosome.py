@@ -20,7 +20,7 @@ from src.models.horario import Sesion, Horario
 # ─── Constantes del espacio de búsqueda ──────────────────────────────────────
 
 DIAS: List[str] = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes"]
-HORAS: List[int] = list(range(7, 17))  # 7:00 am – 4:00 pm (10 franjas)
+HORAS: List[int] = list(range(7, 25))  # 7:00 am – 12:00 am (18 franjas)
 
 
 # ─── Clase Cromosoma ──────────────────────────────────────────────────────────
@@ -66,6 +66,15 @@ class Cromosoma:
         """
         genes: List[Sesion] = []
 
+        # Asignar un aula fija por (profesor, materia)
+        aula_fija = {}
+        for prof in profesores_por_materia.values():
+            for p in prof:
+                for mat_id in p.materias_ids:
+                    clave = (p.id, mat_id)
+                    if clave not in aula_fija:
+                        aula_fija[clave] = random.choice(aulas).id
+
         for grupo in grupos.values():
             for materia_id in grupo.materias_ids:
 
@@ -93,7 +102,7 @@ class Cromosoma:
                         grupo_id=grupo.id,
                         materia_id=materia_id,
                         profesor_id=prof_elegido.id,
-                        aula_id=random.choice(aulas).id,
+                        aula_id=aula_fija.get((prof_elegido.id, materia_id), random.choice(aulas).id),
                         dia=dia_elegido,
                         hora=hora_elegida
                     ))

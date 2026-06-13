@@ -10,7 +10,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Configuración
     const dias = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes'];
-    const horas = ['7:00', '8:00', '9:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00'];
+    const horas = ['7:00', '8:00', '9:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00', '20:00', '21:00', '22:00', '23:00', '24:00'];
 
     // Colores por materia
     const coloresMaterias = {};
@@ -78,6 +78,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         renderizarInterfaz(grupos);
+        window._gruposData = grupos;
     }
 
     function renderizarInterfaz(grupos) {
@@ -198,6 +199,137 @@ document.addEventListener('DOMContentLoaded', () => {
                 'active',
                 tabla.id === `tabla-${idGrupoActivo}`
             );
+        });
+    };
+    window.generarHorario = function() {
+        const btn = document.getElementById('btnGenerar');
+        btn.textContent = 'Generando...';
+        btn.disabled = true;
+        contenedorHorario.innerHTML = '<div class="loading">Corriendo algoritmo, esto puede tardar unos segundos...</div>';
+
+        const maxHorasLibres = parseInt(document.getElementById('maxHorasLibres').value) ?? 3;
+        fetch('/generar', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ maxHorasLibres })
+        })
+            .then(r => r.json())
+            .then(res => {
+                if (res.ok) {
+                    btn.textContent = 'Generar horario';
+                    btn.disabled = false;
+                    console.log('OUTPUT:', res.output);
+                    if (res.output && res.output.includes('⚠')) {
+                        const advertencias = res.output
+                            .split('\n')
+                            .filter(l => l.includes('⚠'))
+                            .join('\n');
+                        contenedorHorario.innerHTML = `<div class="error-message" style="white-space:pre-line;">${advertencias}</div>`;
+                        return;
+                    }
+                    Promise.all(
+                        urlsOpciones.map((url, i) =>
+                            fetch(url + '?t=' + Date.now())
+                                .then(r => r.ok ? r.json() : [])
+                                .then(data => ({ opcion: i + 1, sesiones: data }))
+                                .catch(() => ({ opcion: i + 1, sesiones: [] }))
+                        )
+                    ).then(opciones =>
+                        procesarOpciones(opciones.filter(o => o.sesiones.length > 0))
+                    );
+                } else {
+                    contenedorHorario.innerHTML = `<div class="error-message">Error al generar: ${res.error}</div>`;
+                    btn.textContent = 'Generar horario';
+                    btn.disabled = false;
+                }
+            })
+            .catch(() => {
+                contenedorHorario.innerHTML = '<div class="error-message">No se pudo conectar con el servidor.</div>';
+                btn.textContent = 'Generar horario';
+                btn.disabled = false;
+            });
+    }
+    document.getElementById('btnGenerar').addEventListener('click', generarHorario);
+    window.descargarPDF = function() {
+        const tablaActiva = document.querySelector('.schedule-table-wrapper.active');
+        const pestanaActiva = document.querySelector('.group-btn.active');
+
+        if (!tablaActiva) {
+            alert('Primero genera un horario.');
+            return;
+        }
+
+        const nombreOpcion = pestanaActiva ? pestanaActiva.textContent : 'Horario';
+        const dias = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes'];
+        const horas1 = ['7:00','8:00','9:00','10:00','11:00','12:00','13:00','14:00','15:00','16:00','17:00','18:00'];
+        const horas2 = ['19:00','20:00','21:00','22:00','23:00','24:00'];
+
+        // Obtener datos de la tabla activa
+        const idGrupo = tablaActiva.id.replace('tabla-', '');
+        const grupo = window._gruposData[idGrupo];
+
+        function generarTablaHTML(horas, titulo) {
+            let html = `
+                <div style="font-family: Arial, sans-serif; padding: 16px; background: white;">
+                    <h2 style="text-align:center; color:#1a1a2e; margin-bottom:12px;">${nombreOpcion} — ${titulo}</h2>
+                    <table style="width:100%; border-collapse:collapse; font-size:11px;">
+                        <thead>
+                            <tr style="background:#1a1a2e; color:white;">
+                                <th style="padding:8px; border:1px solid #ccc;">Hora</th>
+                                ${dias.map(d => `<th style="padding:8px; border:1px solid #ccc;">${d}</th>`).join('')}
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+
+            horas.forEach((h, i) => {
+                const bg = i % 2 === 0 ? '#f0f4ff' : '#ffffff';
+                html += `<tr style="background:${bg};">
+                    <td style="padding:8px; border:1px solid #ccc; font-weight:bold; color:#1a1a2e;">${h}</td>`;
+
+                dias.forEach(d => {
+                    const sesion = grupo?.horario[h]?.[d];
+                    if (sesion) {
+                        html += `
+                            <td style="padding:6px; border:1px solid #ccc; background:#dbeafe;">
+                                <div style="font-weight:bold; color:#1e3a8a;">${sesion.materia_id}</div>
+                                <div style="color:#374151; font-size:10px;">👤 ${sesion.profesor_id}</div>
+                                <div style="color:#374151; font-size:10px;">🏫 ${sesion.aula_id}</div>
+                            </td>`;
+                    } else {
+                        html += `<td style="padding:6px; border:1px solid #ccc; color:#9ca3af; text-align:center;">Libre</td>`;
+                    }
+                });
+
+                html += `</tr>`;
+            });
+
+            html += `</tbody></table></div>`;
+            return html;
+        }
+
+        const opciones = {
+            margin: 8,
+            filename: `${nombreOpcion}.pdf`,
+            image: { type: 'jpeg', quality: 0.98 },
+            html2canvas: { scale: 2, backgroundColor: '#ffffff' },
+            jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
+        };
+
+        const pagina1 = document.createElement('div');
+        pagina1.innerHTML = generarTablaHTML(horas1, 'Parte 1 (7:00 – 18:00)');
+
+        const pagina2 = document.createElement('div');
+        pagina2.style.pageBreakBefore = 'always';
+        pagina2.innerHTML = generarTablaHTML(horas2, 'Parte 2 (19:00 – 24:00)');
+
+        const contenedor = document.createElement('div');
+        contenedor.appendChild(pagina1);
+        contenedor.appendChild(pagina2);
+        document.body.appendChild(contenedor);
+
+        html2pdf().set(opciones).from(contenedor).save().then(() => {
+            document.body.removeChild(contenedor);
         });
     };
 });

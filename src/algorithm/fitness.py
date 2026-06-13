@@ -25,9 +25,9 @@ from src.models.entities import Profesor, Aula, Grupo
 
 
 # Pesos de penalización por tipo de violación
-PENALIZACION_CONFLICTO_PROFESOR = 10
+PENALIZACION_CONFLICTO_PROFESOR = 50
 PENALIZACION_CONFLICTO_AULA     = 10
-PENALIZACION_CONFLICTO_GRUPO    = 10
+PENALIZACION_CONFLICTO_GRUPO    = 50
 PENALIZACION_DISPONIBILIDAD     = 10
 PENALIZACION_CAPACIDAD          = 5
 
@@ -42,15 +42,11 @@ class EvaluadorAptitud:
         # cromosoma.puntaje_aptitud también queda actualizado
     """
 
-    def __init__(
-        self,
-        profesores: Dict[str, Profesor],
-        aulas: Dict[str, Aula],
-        grupos: Dict[str, Grupo]
-    ):
+    def __init__(self, profesores, aulas, grupos, max_horas_libres=3):
         self.profesores = profesores
         self.aulas = aulas
         self.grupos = grupos
+        self.max_horas_libres = max_horas_libres
 
     # ── Método principal ──────────────────────────────────────────────────────
 
@@ -175,6 +171,20 @@ class EvaluadorAptitud:
             if clave not in aula_por_materia:
                 aula_por_materia[clave] = s.aula_id
             elif aula_por_materia[clave] != s.aula_id:
-                penalizacion += 8
+                penalizacion += 50
+        
+        # Restricción blanda: máximo de horas libres por día
+        if hasattr(self, 'max_horas_libres'):
+            slots_ocupados_grupo = defaultdict(set)
+            for s in cromosoma.genes:
+                slots_ocupados_grupo[(s.grupo_id, s.dia)].add(s.hora)
+
+            for (grupo_id, dia), horas_ocupadas in slots_ocupados_grupo.items():
+                if horas_ocupadas:
+                    hora_min = min(horas_ocupadas)
+                    hora_max = max(horas_ocupadas)
+                    horas_libres = (hora_max - hora_min + 1) - len(horas_ocupadas)
+                    if horas_libres > self.max_horas_libres:
+                        penalizacion += (horas_libres - self.max_horas_libres) * 6
 
         return penalizacion

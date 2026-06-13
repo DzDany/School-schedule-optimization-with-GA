@@ -6,6 +6,7 @@
     <title>Horario Optimizado</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
 <body>
     <div class="background-blobs">
@@ -20,7 +21,11 @@
             <p>Visualización del horario optimizado por Algoritmo Genético</p>
         </header>
 
-        <div class="controls">
+        <div class="controls" style="display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:16px;">
+            <label style="color:white;">Máx. horas libres por día:</label>
+            <input type="number" id="maxHorasLibres" value="3" min="0" max="17" style="width:60px;">
+            <button id="btnDescargar" onclick="descargarPDF()">Descargar PDF</button>
+            <button id="btnGenerar">Generar horario</button>
             <div class="group-selector" id="selectorGrupo">
                 <!-- Group buttons will be generated here -->
             </div>

@@ -3,57 +3,65 @@
         "grupo_id": "ALUMNO",
         "materia_id": "MAT01",
         "profesor_id": "PROF01",
-        "aula_id": "AULA01",
-        "dia": "Lunes",
-        "hora": "10:00"
-    },
-    {
-        "grupo_id": "ALUMNO",
-        "materia_id": "MAT01",
-        "profesor_id": "PROF01",
-        "aula_id": "AULA01",
-        "dia": "Martes",
-        "hora": "7:00"
-    },
-    {
-        "grupo_id": "ALUMNO",
-        "materia_id": "MAT01",
-        "profesor_id": "PROF01",
-        "aula_id": "AULA01",
-        "dia": "Lunes",
-        "hora": "7:00"
-    },
-    {
-        "grupo_id": "ALUMNO",
-        "materia_id": "MAT01",
-        "profesor_id": "PROF01",
-        "aula_id": "AULA02",
-        "dia": "Lunes",
-        "hora": "9:00"
-    },
-    {
-        "grupo_id": "ALUMNO",
-        "materia_id": "MAT01",
-        "profesor_id": "PROF01",
-        "aula_id": "AULA01",
-        "dia": "Viernes",
-        "hora": "7:00"
-    },
-    {
-        "grupo_id": "ALUMNO",
-        "materia_id": "ESP01",
-        "profesor_id": "PROF02",
         "aula_id": "AULA02",
         "dia": "Miércoles",
         "hora": "9:00"
     },
     {
         "grupo_id": "ALUMNO",
-        "materia_id": "ESP01",
-        "profesor_id": "PROF02",
+        "materia_id": "MAT01",
+        "profesor_id": "PROF01",
+        "aula_id": "AULA02",
+        "dia": "Miércoles",
+        "hora": "7:00"
+    },
+    {
+        "grupo_id": "ALUMNO",
+        "materia_id": "MAT01",
+        "profesor_id": "PROF01",
         "aula_id": "AULA02",
         "dia": "Lunes",
+        "hora": "8:00"
+    },
+    {
+        "grupo_id": "ALUMNO",
+        "materia_id": "MAT01",
+        "profesor_id": "PROF01",
+        "aula_id": "AULA02",
+        "dia": "Lunes",
+        "hora": "9:00"
+    },
+    {
+        "grupo_id": "ALUMNO",
+        "materia_id": "MAT01",
+        "profesor_id": "PROF01",
+        "aula_id": "AULA02",
+        "dia": "Jueves",
+        "hora": "9:00"
+    },
+    {
+        "grupo_id": "ALUMNO",
+        "materia_id": "ESP01",
+        "profesor_id": "PROF02",
+        "aula_id": "AULA03",
+        "dia": "Lunes",
         "hora": "11:00"
+    },
+    {
+        "grupo_id": "ALUMNO",
+        "materia_id": "ESP01",
+        "profesor_id": "PROF02",
+        "aula_id": "AULA03",
+        "dia": "Miércoles",
+        "hora": "8:00"
+    },
+    {
+        "grupo_id": "ALUMNO",
+        "materia_id": "ESP01",
+        "profesor_id": "PROF02",
+        "aula_id": "AULA03",
+        "dia": "Martes",
+        "hora": "9:00"
     },
     {
         "grupo_id": "ALUMNO",
@@ -67,25 +75,9 @@
         "grupo_id": "ALUMNO",
         "materia_id": "ESP01",
         "profesor_id": "PROF02",
-        "aula_id": "AULA02",
+        "aula_id": "AULA03",
         "dia": "Martes",
-        "hora": "9:00"
-    },
-    {
-        "grupo_id": "ALUMNO",
-        "materia_id": "ESP01",
-        "profesor_id": "PROF02",
-        "aula_id": "AULA02",
-        "dia": "Jueves",
-        "hora": "10:00"
-    },
-    {
-        "grupo_id": "ALUMNO",
-        "materia_id": "FIS01",
-        "profesor_id": "PROF01",
-        "aula_id": "AULA01",
-        "dia": "Jueves",
-        "hora": "9:00"
+        "hora": "8:00"
     },
     {
         "grupo_id": "ALUMNO",
@@ -98,49 +90,57 @@
     {
         "grupo_id": "ALUMNO",
         "materia_id": "FIS01",
-        "profesor_id": "PROF01",
+        "profesor_id": "PROF03",
         "aula_id": "AULA01",
-        "dia": "Jueves",
-        "hora": "7:00"
-    },
-    {
-        "grupo_id": "ALUMNO",
-        "materia_id": "QUI01",
-        "profesor_id": "PROF03",
-        "aula_id": "AULA02",
-        "dia": "Jueves",
-        "hora": "12:00"
-    },
-    {
-        "grupo_id": "ALUMNO",
-        "materia_id": "QUI01",
-        "profesor_id": "PROF03",
-        "aula_id": "AULA02",
         "dia": "Martes",
         "hora": "11:00"
     },
     {
         "grupo_id": "ALUMNO",
+        "materia_id": "FIS01",
+        "profesor_id": "PROF03",
+        "aula_id": "AULA01",
+        "dia": "Martes",
+        "hora": "10:00"
+    },
+    {
+        "grupo_id": "ALUMNO",
         "materia_id": "QUI01",
         "profesor_id": "PROF03",
         "aula_id": "AULA02",
-        "dia": "Viernes",
+        "dia": "Jueves",
+        "hora": "10:00"
+    },
+    {
+        "grupo_id": "ALUMNO",
+        "materia_id": "QUI01",
+        "profesor_id": "PROF03",
+        "aula_id": "AULA02",
+        "dia": "Lunes",
+        "hora": "12:00"
+    },
+    {
+        "grupo_id": "ALUMNO",
+        "materia_id": "QUI01",
+        "profesor_id": "PROF03",
+        "aula_id": "AULA02",
+        "dia": "Lunes",
         "hora": "10:00"
     },
     {
         "grupo_id": "ALUMNO",
         "materia_id": "HIS01",
         "profesor_id": "PROF02",
-        "aula_id": "AULA01",
-        "dia": "Jueves",
-        "hora": "8:00"
+        "aula_id": "AULA02",
+        "dia": "Viernes",
+        "hora": "9:00"
     },
     {
         "grupo_id": "ALUMNO",
         "materia_id": "HIS01",
         "profesor_id": "PROF02",
-        "aula_id": "AULA01",
-        "dia": "Martes",
+        "aula_id": "AULA02",
+        "dia": "Viernes",
         "hora": "8:00"
     }
 ]

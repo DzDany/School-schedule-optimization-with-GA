@@ -3,13 +3,48 @@ import socketserver
 import webbrowser
 import os
 import threading
+import subprocess
+import json
+from urllib.parse import urlparse
 
 PORT = 8000
 
-# ir al directorio padre para servir ambos datos y visores
 os.chdir(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-Handler = http.server.SimpleHTTPRequestHandler
+class Handler(http.server.SimpleHTTPRequestHandler):
+    def do_POST(self):
+        if self.path == '/generar':
+            try:
+                length = int(self.headers.get('Content-Length', 0))
+                body = json.loads(self.rfile.read(length)) if length else {}
+                max_horas = str(body.get('maxHorasLibres', 3))
+                resultado = subprocess.run(
+                    ['python3', 'main.py', max_horas],
+                        capture_output=True,
+                        text=True
+                )
+                self.send_response(200)
+                self.send_header('Content-Type', 'application/json')
+                self.send_header('Access-Control-Allow-Origin', '*')
+                self.end_headers()
+                self.wfile.write(json.dumps({
+                    'ok': True,
+                    'output': resultado.stdout
+                }).encode())
+            except Exception as e:
+                self.send_response(500)
+                self.send_header('Content-Type', 'application/json')
+                self.end_headers()
+                self.wfile.write(json.dumps({
+                    'ok': False,
+                    'error': str(e)
+                }).encode())
+        else:
+            self.send_response(404)
+            self.end_headers()
+
+    def log_message(self, format, *args):
+        pass  # Silencia los logs del servidor
 
 def start_server():
     global PORT
@@ -25,12 +60,10 @@ def start_server():
 
 httpd = start_server()
 print(f"Sirviendo en http://localhost:{PORT}")
-print("El navegador se abrirá automáticamente...")
 
-# Abrir el navegador en un hilo separado
 def open_browser():
     webbrowser.open(f"http://localhost:{PORT}/viewer/index.html")
-    
+
 threading.Timer(1.0, open_browser).start()
 
 try:

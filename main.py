@@ -9,10 +9,12 @@ Ejecuta el ciclo evolutivo completo del Algoritmo Genético.
 Ejecutar desde la raíz del proyecto:
     python main.py
 """
-
 import sys
+MAX_HORAS_LIBRES = int(sys.argv[1]) if len(sys.argv) > 1 else 3
+print(f"DEBUG MAX_HORAS_LIBRES: {MAX_HORAS_LIBRES}", flush=True)
 import os
 import json
+from collections import defaultdict
 
 # Asegurar que el directorio raíz esté en el path
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -37,16 +39,31 @@ def main():
     TAM_TORNEO = 3
     UMBRAL_FITNESS = 0.98
     GEN_SIN_MEJORA_MAX = 50
-    ELITISMO = True  # Conservar al mejor individuo intacto de cada generación
+    ELITISMO = True
 
     # ── 1. Cargar y validar datos ─────────────────────────────────────────
     separador("1. Carga de datos")
+
     loader = CargadorDatos()
-    materias, profesores, aulas, grupos = loader.cargar_desde_json("data/sample_config.json")
-    
-    print(f"Grupos: {len(grupos)} | Materias: {len(materias)} | Profesores: {len(profesores)} | Aulas: {len(aulas)}")
-    
-    advertencias = loader.validar_datos(materias, profesores, aulas, grupos)
+
+    materias, profesores, aulas, grupos = loader.cargar_desde_json(
+        "data/sample_config.json"
+    )
+
+    print(
+        f"Grupos: {len(grupos)} | "
+        f"Materias: {len(materias)} | "
+        f"Profesores: {len(profesores)} | "
+        f"Aulas: {len(aulas)}"
+    )
+
+    advertencias = loader.validar_datos(
+        materias,
+        profesores,
+        aulas,
+        grupos
+    )
+
     if advertencias:
         for w in advertencias:
             print(f"⚠ {w}")
@@ -54,11 +71,19 @@ def main():
         print("✓ Datos iniciales validados correctamente.")
 
     # ── 2. Inicialización ─────────────────────────────────────────────────
-    separador("2. Generando Población Inicial")
-    profesores_por_materia = loader.construir_profesores_por_materia(profesores)
+    profesores_por_materia = loader.construir_profesores_por_materia(
+        profesores
+    )
+
     lista_aulas = list(aulas.values())
 
-    evaluador = EvaluadorAptitud(profesores, aulas, grupos)
+    evaluador = EvaluadorAptitud(
+        profesores,
+        aulas,
+        grupos,
+        max_horas_libres=MAX_HORAS_LIBRES
+    )
+
     operadores = OperadoresGeneticos(
         profesores_por_materia=profesores_por_materia,
         aulas=lista_aulas,
@@ -67,98 +92,170 @@ def main():
         tam_torneo=TAM_TORNEO
     )
 
+    def correr_evolucion(numero):
+        separador(f"Corrida {numero}/3")
 
-    # Generar población
-    poblacion = [
-        Cromosoma.generar_aleatorio(grupos, materias, profesores_por_materia, lista_aulas)
-        for _ in range(POP_SIZE)
+        poblacion = [
+            Cromosoma.generar_aleatorio(
+                grupos,
+                materias,
+                profesores_por_materia,
+                lista_aulas
+            )
+            for _ in range(POP_SIZE)
+        ]
+
+        for cromosoma in poblacion:
+            evaluador.evaluar(cromosoma)
+
+        mejor = max(
+            poblacion,
+            key=lambda c: c.puntaje_aptitud
+        )
+
+        generaciones_sin_mejora = 0
+
+        for generacion in range(1, MAX_GENERACIONES + 1):
+
+            nueva_poblacion = []
+
+            if ELITISMO:
+                mejor_actual = max(
+                    poblacion,
+                    key=lambda c: c.puntaje_aptitud
+                )
+                nueva_poblacion.append(mejor_actual.copy())
+
+            while len(nueva_poblacion) < POP_SIZE:
+
+                padre1 = operadores.seleccion_torneo(
+                    poblacion
+                )
+
+                padre2 = operadores.seleccion_torneo(
+                    poblacion
+                )
+
+                hijo1, hijo2 = operadores.cruce_por_grupos(
+                    padre1,
+                    padre2
+                )
+
+                hijo1 = operadores.mutar(hijo1)
+                hijo2 = operadores.mutar(hijo2)
+
+                evaluador.evaluar(hijo1)
+                evaluador.evaluar(hijo2)
+
+                nueva_poblacion.append(hijo1)
+
+                if len(nueva_poblacion) < POP_SIZE:
+                    nueva_poblacion.append(hijo2)
+
+            poblacion = nueva_poblacion
+
+            mejor_gen = max(
+                poblacion,
+                key=lambda c: c.puntaje_aptitud
+            )
+
+            if mejor_gen.puntaje_aptitud > mejor.puntaje_aptitud:
+                mejor = mejor_gen.copy()
+                generaciones_sin_mejora = 0
+            else:
+                generaciones_sin_mejora += 1
+
+            if generacion % 10 == 0:
+                print(
+                    f"  Gen {generacion:3d} | "
+                    f"Aptitud: {mejor.puntaje_aptitud:.4f}"
+                )
+
+            if mejor.puntaje_aptitud >= UMBRAL_FITNESS:
+                print(
+                    f"  ✓ Umbral alcanzado "
+                    f"en generación {generacion}"
+                )
+                break
+
+            if generaciones_sin_mejora >= GEN_SIN_MEJORA_MAX:
+                print(
+                    f"  ⚠ Estancamiento "
+                    f"en generación {generacion}"
+                )
+                break
+
+        print(
+            f"  Mejor aptitud: "
+            f"{mejor.puntaje_aptitud:.4f}"
+        )
+
+        for sesion in mejor.genes:
+            pass
+        horas_por_dia = defaultdict(set)
+        for s in mejor.genes:
+            horas_por_dia[s.dia].add(s.hora)
+
+        advertencia_horas = False
+        for dia, horas in horas_por_dia.items():
+            if horas:
+                hora_min = min(horas)
+                hora_max = max(horas)
+                libres = (hora_max - hora_min + 1) - len(horas)
+                if libres > MAX_HORAS_LIBRES:
+                    print(f"  ⚠ {dia} tiene {libres} horas libres (máx. permitido: {MAX_HORAS_LIBRES})")
+                    advertencia_horas = True
+
+        if advertencia_horas:
+            print(f"  ⚠ No se pudo cumplir la restricción de horas libres en esta corrida.")
+
+        return mejor
+
+    # ── Ejecutar 3 corridas independientes ───────────────────────────────
+    separador("Iniciando 3 corridas independientes")
+
+    top3 = [
+        correr_evolucion(i)
+        for i in range(1, 4)
     ]
 
-    # Evaluar población inicial
-    for cromosoma in poblacion:
-        evaluador.evaluar(cromosoma)
+    # ── Resultados finales ────────────────────────────────────────────────
+    separador("Resultados Finales")
 
-    mejor_historico = max(poblacion, key=lambda c: c.puntaje_aptitud)
-    top3 = [mejor_historico.copy()]
-    generaciones_sin_mejora = 0
-
-    print(f"Población inicial lista. Mejor aptitud base: {mejor_historico.puntaje_aptitud:.4f}")
-
-    # ── 3. Bucle Evolutivo ────────────────────────────────────────────────
-    separador("3. Iniciando Evolución")
-
-    for generacion in range(1, MAX_GENERACIONES + 1):
-        nueva_poblacion = []
-
-        # Elitismo: Guardar al mejor individuo actual
-        if ELITISMO:
-            mejor_actual = max(poblacion, key=lambda c: c.puntaje_aptitud)
-            nueva_poblacion.append(mejor_actual.copy())
-
-        # Crear el resto de la nueva generación
-        while len(nueva_poblacion) < POP_SIZE:
-            # a. Seleccionar padres
-            padre1 = operadores.seleccion_torneo(poblacion)
-            padre2 = operadores.seleccion_torneo(poblacion)
-
-            # b. Cruce (Usando la nueva función por grupos)
-            hijo1, hijo2 = operadores.cruce_por_grupos(padre1, padre2)
-
-            # c. Mutación
-            hijo1 = operadores.mutar(hijo1)
-            hijo2 = operadores.mutar(hijo2)
-
-            # d. Evaluar hijos
-            evaluador.evaluar(hijo1)
-            evaluador.evaluar(hijo2)
-
-            # Agregar a la nueva población (asegurando no pasar de POP_SIZE)
-            nueva_poblacion.append(hijo1)
-            if len(nueva_poblacion) < POP_SIZE:
-                nueva_poblacion.append(hijo2)
-
-        # Reemplazo de población
-        poblacion = nueva_poblacion
-
-        # Evaluar progreso
-        mejor_generacion = max(poblacion, key=lambda c: c.puntaje_aptitud)
-        
-        if mejor_generacion.puntaje_aptitud > mejor_historico.puntaje_aptitud:
-            mejor_historico = mejor_generacion.copy()
-            generaciones_sin_mejora = 0
-            top3 = sorted(top3 + [mejor_generacion.copy()], key=lambda c: c.puntaje_aptitud, reverse=True)[:3]
-        else:
-            generaciones_sin_mejora += 1
-
-        # Imprimir progreso cada 10 generaciones
-        if generacion % 10 == 0 or generacion == 1:
-            print(f"Generación {generacion:3d} | Mejor Aptitud: {mejor_historico.puntaje_aptitud:.4f} | Sin mejora: {generaciones_sin_mejora}")
-
-        # ── Criterios de Parada ──
-        if mejor_historico.puntaje_aptitud >= UMBRAL_FITNESS:
-            print(f"\n✓ Criterio de parada alcanzado: Umbral de aptitud superado ({UMBRAL_FITNESS}).")
-            break
-        
-        if generaciones_sin_mejora >= GEN_SIN_MEJORA_MAX:
-            print(f"\n⚠ Criterio de parada alcanzado: Estancamiento durante {GEN_SIN_MEJORA_MAX} generaciones.")
-            break
-
-    # ── 4. Resultados ─────────────────────────────────────────────────────
-    separador("4. Resultados Finales")
-    print(f"Mejor aptitud final: {mejor_historico.puntaje_aptitud:.4f}")
-    
-    reporte = evaluador.reporte_violaciones(mejor_historico)
-    print("\nDesglose de violaciones restantes:")
-    for tipo, cantidad in reporte.items():
-        print(f"  - {tipo:25s}: {cantidad}")
-
-    # Exportar a JSON
     for i, opcion in enumerate(top3, 1):
+
+        print(
+            f"Opción {i} | "
+            f"Aptitud: {opcion.puntaje_aptitud:.4f}"
+        )
+
+        reporte = evaluador.reporte_violaciones(opcion)
+
+        print("Violaciones:")
+        for tipo, cantidad in reporte.items():
+            print(f"  - {tipo:25s}: {cantidad}")
+
         horario = opcion.to_horario()
+
         ruta = f"data/horario_opcion_{i}.json"
-        with open(ruta, "w", encoding="utf-8") as f:
-            json.dump(horario.to_dict(), f, indent=4, ensure_ascii=False)
-        print(f"✓ Opción {i} exportada (aptitud: {opcion.puntaje_aptitud:.4f}) → '{ruta}'")
+
+        with open(
+            ruta,
+            "w",
+            encoding="utf-8"
+        ) as f:
+            json.dump(
+                horario.to_dict(),
+                f,
+                indent=4,
+                ensure_ascii=False
+            )
+
+        print(
+            f"✓ Opción {i} exportada "
+            f"(aptitud: {opcion.puntaje_aptitud:.4f}) "
+            f"→ '{ruta}'"
+        )
 
 
 if __name__ == "__main__":

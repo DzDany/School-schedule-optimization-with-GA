@@ -143,7 +143,7 @@ class OperadoresGeneticos:
                 continue  # Este gen no muta
 
             # Agrupamos dia y hora en "tiempo"
-            aspecto = random.choice(["profesor", "aula", "tiempo"])
+            aspecto = random.choice(["profesor", "tiempo"])
 
             if aspecto == "profesor":
                 candidatos = self.profesores_por_materia.get(sesion.materia_id, [])
