@@ -49,21 +49,7 @@
   "aulas": [
     { "id": "AULA01", "nombre": "Salón 101",    "capacidad": 35 },
     { "id": "AULA02", "nombre": "Salón 102",    "capacidad": 30 },
-    { "id": "AULA03", "nombre": "Lab Química",  "capacidad": 25 }
-  ],
-
-  "grupos": [
-    {
-      "id": "GRP01",
-      "nombre": "1°A",
-      "num_alumnos": 30,
-      "materias_ids": ["MAT01", "ESP01", "FIS01", "QUI01", "HIS01"]
-    },
-    {
-      "id": "GRP02",
-      "nombre": "1°B",
-      "num_alumnos": 24,
-      "materias_ids": ["MAT01", "ESP01", "FIS01", "QUI01", "HIS01"]
-    }
+    { "id": "AULA03", "nombre": "Salón 103",  "capacidad": 25 }
   ]
+
 }

@@ -18,7 +18,7 @@ def start_server():
             httpd = socketserver.TCPServer(("", PORT), Handler)
             return httpd
         except OSError as e:
-            if e.winerror == 10048 or e.errno == 98: # direccion ya en uso
+            if e.errno in (98, 48):
                 PORT += 1
             else:
                 raise

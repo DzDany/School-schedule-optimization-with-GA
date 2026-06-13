@@ -64,15 +64,13 @@ class CargadorDatos:
             for a in data["aulas"]
         }
 
-        grupos = {
-            g["id"]: Grupo(
-                id=g["id"],
-                nombre=g["nombre"],
-                num_alumnos=g["num_alumnos"],
-                materias_ids=g["materias_ids"]
-            )
-            for g in data["grupos"]
-        }
+        grupo_alumno = Grupo(
+            id="ALUMNO",
+            nombre="Mi Horario",
+            num_alumnos=1,
+            materias_ids=list(materias.keys())
+        )
+        grupos = {"ALUMNO": grupo_alumno}
 
         return materias, profesores, aulas, grupos
 

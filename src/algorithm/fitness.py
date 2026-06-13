@@ -168,4 +168,13 @@ class EvaluadorAptitud:
             if aula and grupo and grupo.num_alumnos > aula.capacidad:
                 penalizacion += PENALIZACION_CAPACIDAD
 
+        # Restricción 6: una materia debe tomarse siempre en el mismo aula
+        aula_por_materia = {}
+        for s in cromosoma.genes:
+            clave = (s.grupo_id, s.materia_id, s.profesor_id)
+            if clave not in aula_por_materia:
+                aula_por_materia[clave] = s.aula_id
+            elif aula_por_materia[clave] != s.aula_id:
+                penalizacion += 8
+
         return penalizacion

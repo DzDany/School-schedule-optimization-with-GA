@@ -79,6 +79,7 @@ def main():
         evaluador.evaluar(cromosoma)
 
     mejor_historico = max(poblacion, key=lambda c: c.puntaje_aptitud)
+    top3 = [mejor_historico.copy()]
     generaciones_sin_mejora = 0
 
     print(f"Población inicial lista. Mejor aptitud base: {mejor_historico.puntaje_aptitud:.4f}")
@@ -125,6 +126,7 @@ def main():
         if mejor_generacion.puntaje_aptitud > mejor_historico.puntaje_aptitud:
             mejor_historico = mejor_generacion.copy()
             generaciones_sin_mejora = 0
+            top3 = sorted(top3 + [mejor_generacion.copy()], key=lambda c: c.puntaje_aptitud, reverse=True)[:3]
         else:
             generaciones_sin_mejora += 1
 
@@ -151,14 +153,12 @@ def main():
         print(f"  - {tipo:25s}: {cantidad}")
 
     # Exportar a JSON
-    horario_final = mejor_historico.to_horario()
-    ruta_salida = "data/horario_optimizado.json"
-    
-    os.makedirs(os.path.dirname(ruta_salida), exist_ok=True)
-    with open(ruta_salida, "w", encoding="utf-8") as f:
-        json.dump(horario_final.to_dict(), f, indent=4, ensure_ascii=False)
-        
-    print(f"\n✓ Horario óptimo exportado exitosamente a '{ruta_salida}'")
+    for i, opcion in enumerate(top3, 1):
+        horario = opcion.to_horario()
+        ruta = f"data/horario_opcion_{i}.json"
+        with open(ruta, "w", encoding="utf-8") as f:
+            json.dump(horario.to_dict(), f, indent=4, ensure_ascii=False)
+        print(f"✓ Opción {i} exportada (aptitud: {opcion.puntaje_aptitud:.4f}) → '{ruta}'")
 
 
 if __name__ == "__main__":
