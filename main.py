@@ -136,7 +136,7 @@ def main():
                     poblacion
                 )
 
-                hijo1, hijo2 = operadores.cruce_por_grupos(
+                hijo1, hijo2 = operadores.cruce_por_materias(
                     padre1,
                     padre2
                 )
@@ -190,20 +190,18 @@ def main():
             f"{mejor.puntaje_aptitud:.4f}"
         )
 
-        for sesion in mejor.genes:
-            pass
-        horas_por_dia = defaultdict(set)
+        slots_ocupados_grupo = defaultdict(set)
         for s in mejor.genes:
-            horas_por_dia[s.dia].add(s.hora)
+            slots_ocupados_grupo[(s.grupo_id, s.dia)].add(s.hora)
 
         advertencia_horas = False
-        for dia, horas in horas_por_dia.items():
+        for (grupo_id, dia), horas in slots_ocupados_grupo.items():
             if horas:
                 hora_min = min(horas)
                 hora_max = max(horas)
                 libres = (hora_max - hora_min + 1) - len(horas)
                 if libres > MAX_HORAS_LIBRES:
-                    print(f"  ⚠ {dia} tiene {libres} horas libres (máx. permitido: {MAX_HORAS_LIBRES})")
+                    print(f"  ⚠ El grupo {grupo_id} el {dia} tiene {libres} horas libres (máx. permitido: {MAX_HORAS_LIBRES})")
                     advertencia_horas = True
 
         if advertencia_horas:

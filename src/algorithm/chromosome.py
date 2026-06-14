@@ -20,7 +20,7 @@ from src.models.horario import Sesion, Horario
 # ─── Constantes del espacio de búsqueda ──────────────────────────────────────
 
 DIAS: List[str] = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes"]
-HORAS: List[int] = list(range(7, 25))  # 7:00 am – 12:00 am (18 franjas)
+HORAS: List[int] = list(range(7, 23))  # 7:00 am – 10:00 pm (16 franjas)
 
 
 # ─── Clase Cromosoma ──────────────────────────────────────────────────────────

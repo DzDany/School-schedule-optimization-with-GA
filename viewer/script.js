@@ -10,7 +10,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Configuración
     const dias = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes'];
-    const horas = ['7:00', '8:00', '9:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00', '20:00', '21:00', '22:00', '23:00', '24:00'];
+    const horas = ['7:00', '8:00', '9:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00', '20:00', '21:00', '22:00'];
 
     // Colores por materia
     const coloresMaterias = {};
@@ -34,11 +34,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 }))
         )
     )
-    .then(opciones =>
-        procesarOpciones(
-            opciones.filter(o => o.sesiones.length > 0)
-        )
-    );
+        .then(opciones =>
+            procesarOpciones(
+                opciones.filter(o => o.sesiones.length > 0)
+            )
+        );
 
     function procesarOpciones(opciones) {
         const grupos = {};
@@ -185,7 +185,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Cambio de pestañas
-    window.cambiarPestana = function(idGrupoActivo) {
+    window.cambiarPestana = function (idGrupoActivo) {
 
         document.querySelectorAll('.group-btn').forEach(boton => {
             boton.classList.toggle(
@@ -201,7 +201,7 @@ document.addEventListener('DOMContentLoaded', () => {
             );
         });
     };
-    window.generarHorario = function() {
+    window.generarHorario = function () {
         const btn = document.getElementById('btnGenerar');
         btn.textContent = 'Generando...';
         btn.disabled = true;
@@ -224,8 +224,9 @@ document.addEventListener('DOMContentLoaded', () => {
                             .split('\n')
                             .filter(l => l.includes('⚠'))
                             .join('\n');
-                        contenedorHorario.innerHTML = `<div class="error-message" style="white-space:pre-line;">${advertencias}</div>`;
-                        return;
+                        contenedorHorario.innerHTML = `<div class="error-message" style="white-space:pre-line; margin-bottom: 20px;">${advertencias}</div>`;
+                    } else {
+                        contenedorHorario.innerHTML = '';
                     }
                     Promise.all(
                         urlsOpciones.map((url, i) =>
@@ -250,7 +251,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
     }
     document.getElementById('btnGenerar').addEventListener('click', generarHorario);
-    window.descargarPDF = function() {
+    window.descargarPDF = function () {
         const tablaActiva = document.querySelector('.schedule-table-wrapper.active');
         const pestanaActiva = document.querySelector('.group-btn.active');
 
@@ -261,8 +262,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const nombreOpcion = pestanaActiva ? pestanaActiva.textContent : 'Horario';
         const dias = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes'];
-        const horas1 = ['7:00','8:00','9:00','10:00','11:00','12:00','13:00','14:00','15:00','16:00','17:00','18:00'];
-        const horas2 = ['19:00','20:00','21:00','22:00','23:00','24:00'];
+        const horas1 = ['7:00', '8:00', '9:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00'];
+        const horas2 = ['19:00', '20:00', '21:00', '22:00'];
 
         // Obtener datos de la tabla activa
         const idGrupo = tablaActiva.id.replace('tabla-', '');

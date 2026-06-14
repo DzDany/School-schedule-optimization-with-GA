@@ -5,6 +5,7 @@ import os
 import threading
 import subprocess
 import json
+import sys
 from urllib.parse import urlparse
 
 PORT = 8000
@@ -19,7 +20,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
                 body = json.loads(self.rfile.read(length)) if length else {}
                 max_horas = str(body.get('maxHorasLibres', 3))
                 resultado = subprocess.run(
-                    ['python3', 'main.py', max_horas],
+                    [sys.executable, 'main.py', max_horas],
                         capture_output=True,
                         text=True
                 )

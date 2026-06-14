@@ -66,57 +66,52 @@ class OperadoresGeneticos:
 
     # ── 2. Cruce de un punto ──────────────────────────────────────────────────
 
-    def cruce_por_grupos(
+    def cruce_por_materias(
         self, padre1: Cromosoma, padre2: Cromosoma) -> Tuple[Cromosoma, Cromosoma]:
         """
-        Cruce por Grupos: En lugar de cortar la lista de genes a la mitad,
-        intercambia los horarios completos de los grupos entre los padres.
-        Garantiza que no se dupliquen ni falten materias para ningún grupo.
+        Cruce por Materias: En lugar de intercambiar grupos completos, 
+        intercambia los horarios completos de cada MATERIA (por grupo) entre los padres.
+        Garantiza que no se dupliquen ni falten horas de ninguna materia.
         """
-        # 1. Identificar todos los grupos únicos que existen en el horario
-        grupos_ids = list(set(s.grupo_id for s in padre1.genes))
+        # 1. Identificar todos los bloques únicos (grupo, materia)
+        bloques_ids = list(set((s.grupo_id, s.materia_id) for s in padre1.genes))
 
-        # Si solo hay un grupo, el cruce de grupos no tiene sentido. 
-        # Devolvemos copias exactas de los padres.
-        if len(grupos_ids) < 2:
+        # Si solo hay una materia en total, el cruce no tiene sentido.
+        if len(bloques_ids) < 2:
             return padre1.copy(), padre2.copy()
 
-        # 2. Elegir un punto de corte aleatorio basado en la lista de grupos
-        punto = random.randint(1, len(grupos_ids) - 1)
-        grupos_mitad_1 = set(grupos_ids[:punto])
-        grupos_mitad_2 = set(grupos_ids[punto:])
+        # 2. Elegir un punto de corte aleatorio
+        punto = random.randint(1, len(bloques_ids) - 1)
+        bloques_mitad_1 = set(bloques_ids[:punto])
+        bloques_mitad_2 = set(bloques_ids[punto:])
 
         # 3. Construir los genes del Hijo 1
         hijo1_genes = []
-        # Hereda la mitad 1 del Padre 1
         for s in padre1.genes:
-            if s.grupo_id in grupos_mitad_1:
+            if (s.grupo_id, s.materia_id) in bloques_mitad_1:
                 hijo1_genes.append(Sesion(
                     s.grupo_id, s.materia_id, s.profesor_id, s.aula_id, s.dia, s.hora
                 ))
-        # Hereda la mitad 2 del Padre 2
         for s in padre2.genes:
-            if s.grupo_id in grupos_mitad_2:
+            if (s.grupo_id, s.materia_id) in bloques_mitad_2:
                 hijo1_genes.append(Sesion(
                     s.grupo_id, s.materia_id, s.profesor_id, s.aula_id, s.dia, s.hora
                 ))
 
-        # 4. Construir los genes del Hijo 2 (el inverso del Hijo 1)
+        # 4. Construir los genes del Hijo 2
         hijo2_genes = []
-        # Hereda la mitad 1 del Padre 2
         for s in padre2.genes:
-            if s.grupo_id in grupos_mitad_1:
+            if (s.grupo_id, s.materia_id) in bloques_mitad_1:
                 hijo2_genes.append(Sesion(
                     s.grupo_id, s.materia_id, s.profesor_id, s.aula_id, s.dia, s.hora
                 ))
-        # Hereda la mitad 2 del Padre 1
         for s in padre1.genes:
-            if s.grupo_id in grupos_mitad_2:
+            if (s.grupo_id, s.materia_id) in bloques_mitad_2:
                 hijo2_genes.append(Sesion(
                     s.grupo_id, s.materia_id, s.profesor_id, s.aula_id, s.dia, s.hora
                 ))
 
-        # 5. Retornar los nuevos individuos listos para evaluarse
+        # 5. Retornar los nuevos individuos
         return Cromosoma(hijo1_genes), Cromosoma(hijo2_genes)
 
     # ── 3. Mutación aleatoria ─────────────────────────────────────────────────

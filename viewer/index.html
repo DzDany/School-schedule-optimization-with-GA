@@ -21,11 +21,15 @@
             <p>Visualización del horario optimizado por Algoritmo Genético</p>
         </header>
 
-        <div class="controls" style="display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:16px;">
-            <label style="color:white;">Máx. horas libres por día:</label>
-            <input type="number" id="maxHorasLibres" value="3" min="0" max="17" style="width:60px;">
-            <button id="btnDescargar" onclick="descargarPDF()">Descargar PDF</button>
-            <button id="btnGenerar">Generar horario</button>
+        <div class="controls-container">
+            <div class="action-controls">
+                <div class="input-wrapper">
+                    <label for="maxHorasLibres">Máx. horas libres por día:</label>
+                    <input type="number" id="maxHorasLibres" value="3" min="0" max="17">
+                </div>
+                <button id="btnGenerar" class="action-btn primary-btn">Generar horario</button>
+                <button id="btnDescargar" class="action-btn secondary-btn" onclick="descargarPDF()">Descargar PDF</button>
+            </div>
             <div class="group-selector" id="selectorGrupo">
                 <!-- Group buttons will be generated here -->
             </div>
